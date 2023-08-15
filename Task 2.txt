@@ -1,0 +1,33 @@
+# developer console:
+
+global class ConvertLeadsToAccountsBatch implements Database.Batchable<SObject>, Database.AllowsCallouts {
+    global Database.QueryLocator start(Database.BatchableContext BC) {
+        String query = 'SELECT Id, FirstName, LastName, Email FROM Lead';
+        return Database.getQueryLocator(query);
+    }
+
+    global void execute(Database.BatchableContext BC, List<Lead> scope) {
+        List<Account> accountsToInsert = new List<Account>();
+        for (Lead lead : scope) {
+            Account account = new Account(
+                Name = lead.FirstName + ' ' + lead.LastName,
+                Description = 'Converted from Lead',
+            );
+            accountsToInsert.add(account);
+        }
+        insert accountsToInsert;
+    }
+
+    global void finish(Database.BatchableContext BC) {
+        Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+        email.setToAddresses(new String[]{'sana.gupta@cginfinity.com'});
+        email.setSubject('Lead Conversion Batch Process was Completed');
+        email.setPlainTextBody('Leads conversion to Accounts has been completed.');
+        Messaging.sendEmail(new Messaging.SingleEmailMessage[] {email});
+    }
+}
+
+# anonymous window:
+
+ConvertLeadsToAccountsBatch batch = new ConvertLeadsToAccountsBatch();
+Database.executeBatch(batch);

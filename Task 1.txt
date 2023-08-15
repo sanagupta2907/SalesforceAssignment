@@ -1,0 +1,61 @@
+# developer console code:
+
+public class AsyncOperations {
+    @future
+    public static void createAccountsContactsForGroup(List<String> accountNames, List<String> contactFirstNames, List<String> contactLastNames) {
+        List<Account> accounts = new List<Account>();
+        List<Contact> contacts = new List<Contact>();
+
+        for (Integer i = 0; i < accountNames.size(); i++) {
+            Account acc = new Account(Name = accountNames[i]);
+            accounts.add(acc);
+
+            Contact con = new Contact(FirstName = contactFirstNames[i], LastName = contactLastNames[i], AccountId = acc.Id);
+            contacts.add(con);
+        }
+
+        insert accounts;
+        insert contacts;
+    }
+}
+
+public class CreateAccountsContactsQueueable implements Queueable {
+    List<String> accountNames;
+    List<String> contactFirstNames;
+    List<String> contactLastNames;
+
+    public CreateAccountsContactsQueueable(List<String> accountNames, List<String> contactFirstNames, List<String> contactLastNames) {
+        this.accountNames = accountNames;
+        this.contactFirstNames = contactFirstNames;
+        this.contactLastNames = contactLastNames;
+    }
+
+    public void execute(QueueableContext context) {
+        List<Account> accounts = new List<Account>();
+        List<Contact> contacts = new List<Contact>();
+
+        for (Integer i = 0; i < accountNames.size(); i++) {
+            Account acc = new Account(Name = accountNames[i]);
+            accounts.add(acc);
+
+            Contact con = new Contact(FirstName = contactFirstNames[i], LastName = contactLastNames[i], AccountId = acc.Id);
+            contacts.add(con);
+        }
+
+        insert accounts;
+        insert contacts;
+    }
+}
+
+#anonymous window code:
+
+List<String> accountNames = new List<String>{'Account 1', 'Account 2', 'Account 3'};
+List<String> contactFirstNames = new List<String>{'Mayank', 'Pranav', 'Rishabh'};
+List<String> contactLastNames = new List<String>{'Aggarwal', 'Sudhakar', 'Singhal'};
+AsyncOperations.createAccountsContactsForGroup(accountNames, contactFirstNames, contactLastNames);
+
+List<String> queueableAccountNames = new List<String>{'Account 4', 'Account 5', 'Account 6'};
+List<String> queueableContactFirstNames = new List<String>{'Srishty', 'Sonali', 'Lagnesh'};
+List<String> queueableContactLastNames = new List<String>{'Rawat', 'Chawla', 'Thakur'};
+CreateAccountsContactsQueueable queueableJob = new CreateAccountsContactsQueueable(queueableAccountNames, queueableContactFirstNames, queueableContactLastNames);
+System.enqueueJob(queueableJob);

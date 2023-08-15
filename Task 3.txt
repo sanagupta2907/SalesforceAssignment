@@ -1,0 +1,15 @@
+# developer console:
+
+global class ScheduleLeadConversion implements Schedulable {
+    global void execute(SchedulableContext sc) {
+        ConvertLeadsToAccountsBatch batch = new ConvertLeadsToAccountsBatch();
+        Database.executeBatch(batch, 200); 
+    }
+}
+
+# anonymous window:
+
+ScheduleLeadConversion scheduler = new ScheduleLeadConversion();
+String cronExp = '0 0 0 * * ?'; // this will run daily at midnight
+System.schedule('LeadConversionJob', cronExp, scheduler);
+
